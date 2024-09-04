@@ -1,48 +1,80 @@
 import * as grpc from '@grpc/grpc-js';
-import { HelloServiceService } from './generated/incident_grpc_pb';
-import { HelloRequest, HelloResponse, GetGreetingRequest, GetGreetingResponse, Greeting } from './generated/incident_pb';
+import {
+  IncidentServiceService,
+  IIncidentServiceServer
+} from './generated/incident_grpc_pb';
+import {
+  ReportIncidentRequest,
+  ReportIncidentResponse,
+  GetIncidentRequest,
+  GetIncidentResponse,
+  Incident
+} from './generated/incident_pb';
+import { v4 as uuidv4 } from 'uuid';
 
-// In-memory storage for greetings
-const greetings: Record<string, Greeting.AsObject> = {};
+// In-memory storage for incidents
+const incidents: Record<string, Incident.AsObject> = {};
 
-// Implement SayHello method
-const sayHello: grpc.handleUnaryCall<HelloRequest, HelloResponse> = (call, callback) => {
-  const name = call.request.getName();
-  const response = new HelloResponse();
-  response.setMessage(`Hello, ${name}!`);
+// Implement the RPC methods
+const reportIncident: grpc.handleUnaryCall<ReportIncidentRequest, ReportIncidentResponse> = (call, callback) => {
+  const incident = call.request.getIncident();
+  
+  if (!incident) {
+    callback({
+      code: grpc.status.INVALID_ARGUMENT,
+      details: 'Incident data is missing'
+    }, null);
+    return;
+  }
+
+  const incidentId = uuidv4(); // Generate a unique ID
+
+  const newIncident = {
+    id: incident.getId() || incidentId, // Use a generated ID if not provided
+    type: incident.getType() || '',
+    description: incident.getDescription() || '',
+    anonymous: incident.getAnonymous() || false,
+    created: new Date().toISOString() // Correct field name
+  };
+
+  incidents[newIncident.id] = newIncident;
+
+  const response = new ReportIncidentResponse();
+  response.setMessage('Incident reported successfully');
   callback(null, response);
 };
 
-// Implement GetGreeting method
-const getGreeting: grpc.handleUnaryCall<GetGreetingRequest, GetGreetingResponse> = (call, callback) => {
-  const id = call.request.getId();
-  const greeting = greetings[id];
+const getIncident: grpc.handleUnaryCall<GetIncidentRequest, GetIncidentResponse> = (call, callback) => {
+  const incidentId = call.request.getId();
+  const incident = incidents[incidentId];
 
-  if (greeting) {
-    const response = new GetGreetingResponse();
-    const greetingMessage = new Greeting();
-    greetingMessage.setId(greeting.id);
-    greetingMessage.setGreeting(greeting.greeting);
-    response.setGreeting(greetingMessage);
+  if (incident) {
+    const response = new GetIncidentResponse();
+    const incidentMessage = new Incident();
+    incidentMessage.setId(incident.id);
+    incidentMessage.setType(incident.type);
+    incidentMessage.setDescription(incident.description);
+    incidentMessage.setAnonymous(incident.anonymous);
+    incidentMessage.setCreated(incident.created); // Correct field name
+    response.setIncident(incidentMessage);
     callback(null, response);
   } else {
     callback({
       code: grpc.status.NOT_FOUND,
-      details: 'Greeting not found'
+      details: 'Incident not found'
     }, null);
   }
 };
 
-// Create and configure the gRPC server
+// Create and start the server
 const server = new grpc.Server();
-server.addService(HelloServiceService as unknown as grpc.ServiceDefinition<grpc.UntypedServiceImplementation>, {
-  sayHello,
-  getGreeting
+
+server.addService(IncidentServiceService as unknown as grpc.ServiceDefinition<IIncidentServiceServer>, {
+  reportIncident,
+  getIncident
 });
 
 const PORT = '0.0.0.0:50051';
-
-// Bind and start the server
 server.bindAsync(PORT, grpc.ServerCredentials.createInsecure(), (error, port) => {
   if (error) {
     console.error(`Failed to bind server: ${error.message}`);

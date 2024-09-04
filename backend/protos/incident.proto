@@ -1,4 +1,4 @@
-syntax = "proto3";
+/*syntax = "proto3";
 
 package hello;
 
@@ -27,6 +27,40 @@ message GetGreetingResponse {
 service HelloService {
   rpc SayHello(HelloRequest) returns (HelloResponse);
   rpc GetGreeting(GetGreetingRequest) returns (GetGreetingResponse); // New method
+}*/
+
+syntax = "proto3";
+
+package incident;
+
+message Incident {
+  string id = 1;
+  string type = 2;
+  string description = 3;
+  bool anonymous = 4;
+  string created = 5;
 }
+
+message ReportIncidentRequest {
+  Incident incident = 1;
+}
+
+message ReportIncidentResponse {
+  string message = 1;
+}
+
+message GetIncidentRequest {
+  string id = 1;
+}
+
+message GetIncidentResponse {
+  Incident incident = 1;
+}
+
+service IncidentService {
+  rpc ReportIncident(ReportIncidentRequest) returns (ReportIncidentResponse);
+  rpc GetIncident(GetIncidentRequest) returns (GetIncidentResponse);
+}
+
 
 
