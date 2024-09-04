@@ -1,0 +1,28 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "proto:generate": "grpc_tools_node_protoc --plugin=protoc-gen-ts=./node_modules/.bin/protoc-gen-ts --js_out=import_style=commonjs,binary:./src/generated --ts_out=./src/generated --grpc_out=grpc_js:./src/generated -I=./protos ./protos/*.proto",
+    "build": "npm run proto:generate && tsc",
+    "start": "node dist/server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@grpc/grpc-js": "^1.11.1",
+    "@grpc/proto-loader": "^0.7.13",
+    "uuid": "^10.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.5.3",
+    "@types/uuid": "^10.0.0",
+    "grpc_tools_node_protoc_ts": "^5.3.3",
+    "grpc-tools": "^1.12.4",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.5.4"
+  }
+}

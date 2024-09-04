@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+package hello;
+
+message HelloRequest {
+  string name = 1;
+  string id = 2; // New field for ID
+}
+
+message HelloResponse {
+  string message = 1;
+}
+
+message Greeting {
+  string id = 1;
+  string greeting = 2;
+}
+
+message GetGreetingRequest {
+  string id = 1;
+}
+
+message GetGreetingResponse {
+  Greeting greeting = 1;
+}
+
+service HelloService {
+  rpc SayHello(HelloRequest) returns (HelloResponse);
+  rpc GetGreeting(GetGreetingRequest) returns (GetGreetingResponse); // New method
+}
+
+
