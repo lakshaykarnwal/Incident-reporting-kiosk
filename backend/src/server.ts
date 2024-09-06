@@ -30,11 +30,11 @@ const reportIncident: grpc.handleUnaryCall<ReportIncidentRequest, ReportIncident
   const incidentId = uuidv4(); // Generate a unique ID
 
   const newIncident = {
-    id: incident.getId() || incidentId, // Use a generated ID if not provided
+    id: incident.getId() || incidentId, 
     type: incident.getType() || '',
     description: incident.getDescription() || '',
     anonymous: incident.getAnonymous() || false,
-    created: new Date().toISOString() // Correct field name
+    created: new Date().toISOString() 
   };
 
   incidents[newIncident.id] = newIncident;
@@ -55,7 +55,7 @@ const getIncident: grpc.handleUnaryCall<GetIncidentRequest, GetIncidentResponse>
     incidentMessage.setType(incident.type);
     incidentMessage.setDescription(incident.description);
     incidentMessage.setAnonymous(incident.anonymous);
-    incidentMessage.setCreated(incident.created); // Correct field name
+    incidentMessage.setCreated(incident.created); 
     response.setIncident(incidentMessage);
     callback(null, response);
   } else {
